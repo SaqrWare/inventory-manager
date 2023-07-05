@@ -16,3 +16,9 @@ class Space (Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(32))
     
+class User (Base):
+    __tablename__ = 'user'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50))
+    email = Column(String(55), unique=True)
+    password = Column(String(60))
