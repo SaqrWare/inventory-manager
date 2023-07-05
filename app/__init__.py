@@ -4,4 +4,4 @@ from flask import Flask
 app = Flask(__name__)
 
 # Importing routes and models
-from app import routes, models, database
+from app import routes, models, database, service, middleware
