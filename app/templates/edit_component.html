@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <title>
+        Edit Component
+    </title>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Home</a>
+
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <form action="" enctype="multipart/form-data" method="post">
+            <div class="text-center">
+                <img id="imagePreview" style="max-height: 200PX;" src="/static/images/{{component.image}}"
+                    class="rounded">
+            </div>
+            <div class="mb-3">
+                <label for="formFile" class="form-label">Change Image</label>
+                <input class="form-control" name="file" type="file" id="formFile">
+            </div>
+        </form>
+        <form action="" id="edit-component" method="post">
+            <input type="hidden" name="id" value="{{component.id}}">
+            <input type="hidden" name="image" id="componentImage" value="{{component.image}}">
+            <div class="mb-3">
+                <label class="form-label">Component title</label>
+                <input class="form-control" name="title" placeholder="Title" value="{{component.title}}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" name="description"
+                    placeholder="Description">{{component.description}}</textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Category</label>
+                <select class="form-select" name="category_id" aria-label="Default select example">
+                    {% for category in categories %}
+                    <option value="{{category.id}}" {% if component.category_id==category.id %} selected {% endif %}>
+                        {{category.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Space</label>
+                <select class="form-select" name="space_id" aria-label="Default select example">
+                    {% for space in spaces %}
+                    <option value="{{space.id}}" {% if component.space_id==space.id %} selected {% endif %}>
+                        {{space.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Purchase date</label>
+                <input class="form-control" name="purchase_date" type="date" placeholder="Purchase date"
+                    value="{{component.purchase_date}}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Termination date</label>
+                <input class="form-control" name="termination_date" type="date" placeholder="Termination date"
+                    value="{{component.termination_date}}">
+            </div>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="1" name="status" {% if component.status %}
+                        checked {% endif %}>
+                    <label class="form-check-label" for="flexCheckDefault">
+                        Status
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Update</button>
+        </form>
+    </div>
+
+    <div class="container">
+        <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+            <div class="col-md-4 d-flex align-items-center">
+                <a href="/" class="mb-3 me-2 mb-md-0 text-body-secondary text-decoration-none lh-1">
+                    <svg class="bi" width="30" height="24">
+                        <use xlink:href="#bootstrap"></use>
+                    </svg>
+                </a>
+                <span class="mb-3 mb-md-0 text-body-secondary">© 2023 Adef, Inc</span>
+            </div>
+
+            <ul class="nav col-md-4 justify-content-end list-unstyled d-flex">
+                <li class="ms-3"><a class="text-body-secondary" href="#"><svg class="bi" width="24" height="24">
+                            <use xlink:href="#twitter"></use>
+                        </svg></a></li>
+                <li class="ms-3"><a class="text-body-secondary" href="#"><svg class="bi" width="24" height="24">
+                            <use xlink:href="#instagram"></use>
+                        </svg></a></li>
+                <li class="ms-3"><a class="text-body-secondary" href="#"><svg class="bi" width="24" height="24">
+                            <use xlink:href="#facebook"></use>
+                        </svg></a></li>
+            </ul>
+        </footer>
+    </div>
+    <script src="/static/js/form-data-json.js"></script>
+    <script src="/static/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+        crossorigin="anonymous"></script>
+
+    <script>
+
+
+
+        document.querySelector("#formFile").addEventListener("change", async (e) => {
+            const file = e.target.files[0]
+            console.log(file)
+            const formData = new FormData()
+            formData.append('file', file, file.name)
+            const res = await fetch('/api/upload', {
+                body: formData,
+                method: 'POST'
+            })
+            const responseJSON = await res.json()
+            document.querySelector("#imagePreview").setAttribute('src', "/static/images/" + responseJSON.file)
+            document.querySelector("#componentImage").setAttribute('value', responseJSON.file)
+        })
+
+        document.querySelector("#edit-component").addEventListener("submit", async (e) => {
+            e.preventDefault()
+            const formJSON = FormDataJson.toJson(document.querySelector("#edit-component"))
+
+
+            if (formJSON['status']) formJSON.status = true
+            else formJSON.status = false
+
+            console.log(formJSON)
+            response = await fetch('/api/admin/component/' + formJSON.id, {
+                method: "PUT", // *GET, POST, PUT, DELETE, etc.
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formJSON)
+            })
+
+            document.location = "/admin/components"
+        })
+    </script>
+</body>
+
+</html>
