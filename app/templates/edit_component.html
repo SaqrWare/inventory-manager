@@ -21,11 +21,22 @@
     </nav>
 
     <div class="container my-5">
-        <form action="" id="new-product" method="post">
+        <form action="" enctype="multipart/form-data" method="post">
+            <div class="text-center">
+                <img id="imagePreview" style="max-height: 200PX;" src="/static/images/{{component.image}}"
+                    class="rounded">
+            </div>
+            <div class="mb-3">
+                <label for="formFile" class="form-label">Change Image</label>
+                <input class="form-control" name="file" type="file" id="formFile">
+            </div>
+        </form>
+        <form action="" id="edit-component" method="post">
             <input type="hidden" name="id" value="{{component.id}}">
+            <input type="hidden" name="image" id="componentImage" value="{{component.image}}">
             <div class="mb-3">
                 <label class="form-label">Component title</label>
-                <input class="form-control" name="title" placeholder="Title" value="{{component.name}}">
+                <input class="form-control" name="title" placeholder="Title" value="{{component.title}}">
             </div>
             <div class="mb-3">
                 <label class="form-label">Description</label>
@@ -43,7 +54,7 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Space</label>
-                <select class="form-select" name="category_id" aria-label="Default select example">
+                <select class="form-select" name="space_id" aria-label="Default select example">
                     {% for space in spaces %}
                     <option value="{{space.id}}" {% if component.space_id==space.id %} selected {% endif %}>
                         {{space.name}}</option>
@@ -51,11 +62,21 @@
                 </select>
             </div>
             <div class="mb-3">
+                <label class="form-label">Purchase date</label>
+                <input class="form-control" name="purchase_date" type="date" placeholder="Purchase date"
+                    value="{{component.purchase_date}}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Termination date</label>
+                <input class="form-control" name="termination_date" type="date" placeholder="Termination date"
+                    value="{{component.termination_date}}">
+            </div>
+            <div class="mb-3">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" value="1" name="status" {% if component.status %}
                         checked {% endif %}>
                     <label class="form-check-label" for="flexCheckDefault">
-                        In Stock
+                        Status
                     </label>
                 </div>
             </div>
@@ -91,6 +112,45 @@
     <script src="/static/js/bootstrap.bundle.min.js"
         integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
         crossorigin="anonymous"></script>
+
+    <script>
+
+
+
+        document.querySelector("#formFile").addEventListener("change", async (e) => {
+            const file = e.target.files[0]
+            console.log(file)
+            const formData = new FormData()
+            formData.append('file', file, file.name)
+            const res = await fetch('/api/upload', {
+                body: formData,
+                method: 'POST'
+            })
+            const responseJSON = await res.json()
+            document.querySelector("#imagePreview").setAttribute('src', "/static/images/" + responseJSON.file)
+            document.querySelector("#componentImage").setAttribute('value', responseJSON.file)
+        })
+
+        document.querySelector("#edit-component").addEventListener("submit", async (e) => {
+            e.preventDefault()
+            const formJSON = FormDataJson.toJson(document.querySelector("#edit-component"))
+
+
+            if (formJSON['status']) formJSON.status = true
+            else formJSON.status = false
+
+            console.log(formJSON)
+            response = await fetch('/api/admin/component/' + formJSON.id, {
+                method: "PUT", // *GET, POST, PUT, DELETE, etc.
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formJSON)
+            })
+
+            document.location = "/admin/components"
+        })
+    </script>
 </body>
 
 </html>
