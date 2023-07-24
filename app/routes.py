@@ -1,7 +1,7 @@
 from flask import render_template, send_from_directory, request
 import bcrypt
 from app import app
-from app.models import User, Category
+from app.models import User, Category, Space
 from app.middleware import auth
 from app.database import session
 from app.service import get_component_by_id, update_component, get_category_by_id, get_space_by_id, get_all_categories, get_all_spaces
@@ -72,3 +72,17 @@ def api_add_category():
     session.add(category)
     session.commit()
     return "added category", 200
+
+
+@app.get("/admin/space/create")
+def add_space():
+    return render_template("add_space.html")
+
+
+@app.post("/api/admin/space")
+def api_add_space():
+    body = request.json
+    space = Space(name=body["name"])
+    session.add(space)
+    session.commit()
+    return "added space", 200
